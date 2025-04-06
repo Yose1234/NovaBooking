@@ -1,0 +1,110 @@
+1. Architettura del Sistema
+L'architettura di NovaBooking dovrà essere basata su una struttura multi-tenant, con ogni proprietario che gestisce la propria struttura in modo indipendente, ma con alcune funzionalità centralizzate. Questo approccio garantirà che ogni proprietario abbia accesso al proprio pannello di controllo e ai propri dati, senza interferire con quelli di altri proprietari.
+
+1.1. Multi-Tenant con Laravel
+In un'architettura multi-tenant (multi-owner), l'idea principale è che più utenti (proprietari di strutture) possano usare lo stesso sistema in isolamento. Ogni proprietario avrà accesso a dati specifici come le prenotazioni, le camere, i pagamenti, ecc., senza interferire con gli altri.
+
+Laravel supporta il multi-tenancy in vari modi. Una delle opzioni più comuni è usare pacchetti come tenancy/tenancy o hyn/multi-tenant, che forniscono un'implementazione del multi-tenancy direttamente nel framework.
+
+Struttura di Base del Database
+In un sistema multi-tenant, ci sono due approcci principali per gestire il database:
+
+Database condiviso, schemi separati: Tutti i dati sono in un unico database, ma ogni tenant (proprietario) ha il proprio schema separato.
+
+Database separato per ogni tenant: Ogni proprietario ha un database separato, ma in questo caso può essere più complicato gestire il sistema.
+
+Per il nostro progetto, l'approccio database condiviso, schemi separati è più conveniente, poiché rende più facile gestire gli aggiornamenti e ridurre la complessità.
+
+Struttura del Database (Esempio)
+Immagina una struttura del database come questa:
+
+users: Tabelle per gli utenti (proprietari e amministratori).
+
+properties: Tabelle per le strutture.
+
+rooms: Tabelle per le camere di ogni struttura.
+
+bookings: Tabelle per le prenotazioni.
+
+payments: Tabelle per le transazioni di pagamento.
+
+reviews: Tabelle per le recensioni degli utenti.
+
+settings: Tabelle per le configurazioni personalizzate per ogni struttura (costi, politiche, ecc.).
+
+Ogni tabella avrà una colonna tenant_id (ID del proprietario) per isolare i dati di ciascun tenant.
+
+1.2. Componenti dell'Architettura
+L'architettura di NovaBooking può essere suddivisa nei seguenti componenti:
+
+Back-End (Laravel)
+
+Controllers: Gestiscono la logica delle richieste (per esempio, prenotazioni, gestione camere, ecc.).
+
+Models: Ogni entità del sistema (utente, struttura, camera, prenotazione, pagamento, recensione) sarà rappresentata da un modello Eloquent.
+
+Views: Renderizzano le informazioni dinamiche per l'utente.
+
+Middleware: Gestiscono la logica di accesso e autorizzazione (multi-tenant).
+
+API: Per la comunicazione con i sistemi esterni (ad esempio, per la sincronizzazione con OTA o gateway di pagamento).
+
+Front-End (Blade + Livewire / Vue.js)
+
+Blade: Per i template PHP e la visualizzazione dinamica.
+
+Livewire / Vue.js: Per le interazioni in tempo reale (ad esempio, per la gestione delle disponibilità delle camere e la visualizzazione dei calendari).
+
+Database
+
+MySQL / PostgreSQL: Per il database relazionale.
+
+Redis: Per la gestione della cache, sessioni e code (ad esempio, per inviare email o notifiche).
+
+Servizi Esterni
+
+Gateway di pagamento: Come Stripe, PayPal per la gestione dei pagamenti.
+
+OTA API: Integrazione con agenzie di viaggio online come Booking.com, Airbnb, Expedia per sincronizzare le disponibilità.
+
+Servizi di notifiche: Per inviare email o notifiche push agli utenti.
+
+Deployment
+
+Docker: Per la gestione dell'ambiente di sviluppo e produzione.
+
+CI/CD: Pipeline di integrazione continua e distribuzione continua per facilitare l'implementazione.
+
+2. Funzionalità Principali del Sistema
+Il sistema deve gestire sia la parte front-end (per gli utenti finali) sia la parte back-end (per i proprietari delle strutture). Ecco le funzionalità principali:
+
+2.1. Gestione Utenti (Proprietari e Amministratori)
+Registrazione/Accesso: Gli utenti devono potersi registrare come proprietari di strutture o amministratori.
+
+Autenticazione e autorizzazione: Ogni proprietario avrà accesso solo ai propri dati e alle proprie strutture.
+
+Ruoli e Permessi: Definizione di diversi ruoli, come proprietario, manager, e receptionist, con permessi specifici per ciascun ruolo.
+
+2.2. Gestione Strutture e Camere
+Proprietari: Ogni proprietario può creare e gestire le proprie strutture (hotel, appartamenti, B&B).
+
+Gestione camere: Ogni struttura può avere più camere, con informazioni su tipologia, tariffe, e disponibilità.
+
+Calendario delle camere: Ogni camera avrà un calendario per visualizzare la disponibilità e le prenotazioni.
+
+2.3. Prenotazioni e Check-in/Check-out
+Prenotazione online: Gli utenti (clienti) possono prenotare camere online.
+
+Gestione prenotazioni: I proprietari possono vedere tutte le prenotazioni, modificarle o cancellarle.
+
+Check-in/Check-out: Gestione delle operazioni di check-in e check-out per ogni prenotazione.
+
+2.4. Pagamenti
+Gateway di pagamento: Integrazione con Stripe o PayPal per gestire i pagamenti delle prenotazioni.
+
+Storico pagamenti: Ogni proprietario avrà accesso alla cronologia delle transazioni.
+
+Fatturazione: Creazione automatica di fatture per le prenotazioni pagate.
+
+2.5. Integrazione con OTA (Online Travel Agencies)
+Sincronizzazione disponibilità: Sincronizzazione in tempo reale con agenzie di viaggio online come Booking.com, Airbnb, Expedia.
